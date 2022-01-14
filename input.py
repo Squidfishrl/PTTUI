@@ -15,9 +15,7 @@ class Input:
         self.keyboard: Keyboard = Keyboard()
 
 
-    def start_listen(self) -> None:
-        """
-        Start listening for input
+    def start_listen(self) -> None: """ Start listening for input
         Essentially allows the mouse to be used
         """
 
@@ -61,46 +59,48 @@ class Input:
             line[-2] = line[-2][:-1]  # Remove the M from columns
 
             self.mouse.update(line)  # update mouse coords and callback on event
+        else:
+            self.keyboard.update(line)
 
 
 class MouseEvent(Enum):
     """ An enumeration of all the polled mouse events """
 
     """ Mouse pointer moves when left/right/middle click isn't held """
-    POINTER_MOVE = auto() 
+    POINTER_MOVE: str = "35M" 
 
     """ Left click is pressed (and not released) """
-    LEFT_CLICK_HOLD = auto()
+    LEFT_CLICK_HOLD: str = "0M"
 
     """ Mouse pointer moves while left click is held """
-    LEFT_CLICK_DRAG = auto()
+    LEFT_CLICK_DRAG: str = "32M"
 
     """ Left click is released (no longer pressed) """
-    LEFT_CLICK_RELEASE = auto()
+    LEFT_CLICK_RELEASE: str = "0m" 
 
     """ Right click is pressed (and not released) """
-    RIGHT_CLICK_HOLD = auto()
+    RIGHT_CLICK_HOLD: str = "2M" 
 
     """ Mouse pointer moves while right click is held """
-    RIGHT_CLICK_DRAG = auto()
+    RIGHT_CLICK_DRAG: str = "34M"
 
     """ Right click is released (no longer pressed) """
-    RIGHT_CLICK_RELEASE = auto()
+    RIGHT_CLICK_RELEASE: str = "2m"
 
     """ Middle click is pressed (and not released) """
-    MIDDLE_CLICK_HOLD = auto()
+    MIDDLE_CLICK_HOLD: str = "1M" 
 
     """ Mouse pointer moves while middle click is held """
-    MIDDLE_CLICK_DRAG = auto()
+    MIDDLE_CLICK_DRAG: str = "33M"
 
     """ Middle click is released (no longer pressed) """
-    MIDDLE_CLICK_RELEASE = auto()
+    MIDDLE_CLICK_RELEASE: str = "1m"
 
-    """ Upwards scroll (is also triggered by touchpad) """
-    SCROLL_UP = auto()
+    """ Upwards scroll """
+    SCROLL_UP: str = "64M"
 
-    """ Downwards scroll (is also triggered by touchpad) """
-    SCROLL_DOWN = auto()
+    """ Downwards scroll """
+    SCROLL_DOWN: str = "65M"
 
 
 class Mouse:
@@ -126,7 +126,7 @@ class Mouse:
         self.row = input_[2]  # update mouse row pos
         self.column = input_[1]  # update mouse column pos
         self.last_event = self.get_event(code)
-        print(f"Row {self.row}  Column {self.column}  code {code}")
+        print(f"Row {self.row}  Column {self.column}  {MouseEvent(code).name}")
 
         # call all functions, subscribed to the event
         try:
@@ -140,25 +140,10 @@ class Mouse:
         Given a mouse input event code, convert it to the representing event
         """
 
-        codes = {
-            "35M": MouseEvent.POINTER_MOVE,
-            "0M": MouseEvent.LEFT_CLICK_HOLD,
-            "32M": MouseEvent.LEFT_CLICK_DRAG,
-            "0m": MouseEvent.LEFT_CLICK_RELEASE,
-            "2M": MouseEvent.RIGHT_CLICK_HOLD,
-            "34M": MouseEvent.RIGHT_CLICK_DRAG,
-            "2m": MouseEvent.RIGHT_CLICK_RELEASE,
-            "1M": MouseEvent.MIDDLE_CLICK_HOLD,
-            "33M": MouseEvent.MIDDLE_CLICK_DRAG,
-            "1m": MouseEvent.MIDDLE_CLICK_RELEASE,
-            "65M": MouseEvent.SCROLL_UP,
-            "64M": MouseEvent.SCROLL_DOWN,
-        }
-
         try:
-            return codes[code]
-        except BaseException as e:
-            print(e)
+            return MouseEvent(code).name
+        except Exception as e:
+            prZZint(e)
 
     def subscribe(self, event: MouseEvent, callback: Callable[..., Any]):
         """ Subscribe a function to an event. Duplicate callbacks cannot be added (no effect) """
@@ -181,8 +166,48 @@ class Mouse:
 
 
 class Keyboard:
+    """ TODO: HOTKEYS """
+
     def __init__(self):
         self.last_press: str = ''
+        self.subscriptions: dict[str, set[Callable[..., Any]]] = {}
+
+    def update(self, input_: str):
+        """
+        input_ should be passed by Input.read_input
+        should always be 1 character long
+        TODO: hotkey support
+        """
+
+        self.last_press = input_
+        print(self.last_press)
+
+        try:
+            for callback in self.subscriptions[self.last_press]:
+                callback()
+        except KeyError: 
+            pass  # event has never had any subscribtions
+
+    def subscribe(self, event: str, callback: Callable[..., Any]):
+        """ Subscribe a function to a keyboard button press. Duplicate callbacks cannot be added (no effect) """
+        if self.subscriptions.get(event) is None:  # Check if event entry exists
+            # event subscribtions are a set to avoid duplicate callback functions
+            self.subscriptions[event] = set()  # add an empty set as a value
+
+        self.subscriptions[event].add(callback)  # append function to callback
+
+    def unsubscribe(self, event: MouseEvent, callback: Callable[..., Any]):
+        """
+        Unsibscribe a function from an event
+        Raise a (TODO: Custom) Error if callback doesn't exist 
+        """
+
+        try:
+            self.subscriptions[event].remove(callback)
+        except KeyError:
+            raise Exception("Callback doesn't exist.")
+
+
 
 
 if __name__ == '__main__':
