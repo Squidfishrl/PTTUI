@@ -15,7 +15,9 @@ class Input:
         self.keyboard: Keyboard = Keyboard()
 
 
-    def start_listen(self) -> None: """ Start listening for input
+    def start_listen(self) -> None: 
+        """
+        Start listening for input
         Essentially allows the mouse to be used
         """
 
