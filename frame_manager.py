@@ -1,4 +1,5 @@
 from itertools import chain
+from math import ceil, floor
 from typing import Type
 
 from frame import Frame
@@ -49,6 +50,7 @@ class FrameManager():
         """
         Registers a frame for terminal resize event 
         Called when a frame is created
+        TODO: Don't resize individual frames, just subscribe the frame manager which resizes all the frames
         """
 
         self.terminal.on_resize(frame.resize)
@@ -76,9 +78,6 @@ class FrameManager():
             if target_frame is not None:
                 break
 
-
-
-
     def print(self) -> None:
         """ Conver char_grid to a string via list coprehension and print it """
 
@@ -97,6 +96,50 @@ class FrameManager():
         
         self.terminal.write(''.join([char for row in self.char_grid for char in row]))
 
+    def splitv(self, frame: Frame) -> Frame:
+        """
+        Splits a frame vertically, creating 2 frames
+        TODO: More arguments such as % % split..
+        if there is frame x " x "
+        after split and a new frame y will be " x|y "
+
+        TODO: three+ way event splits..
+        """
+        # Create a new frame in the above described way
+        new_frame: Frame = Frame(frame.rows, floor(frame.columns/2), (frame.top_left_point[0], frame.top_left_point[1] + ceil(frame.columns/2)))
+        self.frames.append(new_frame)
+        # TODO Resize old frame -> Also take in account dividing odd numbers, use math.floor or ceil
+
+        # register new frame
+        self._register_frame(new_frame)
+
+        return new_frame
+
+    def splith(self, frame: Frame) -> Frame:
+        """
+        Splits a frame horisontally, creating 2 frames
+        TODO: More arguments such as % % split..
+        if there is frame x 
+        "   "
+        " x "
+        "   "
+        after split and a new frame y will be and:
+        " x "
+        "---"
+        " y "
+
+        TODO: three+ way event splits..
+        """
+        # Create a new frame in the above described way
+        new_frame: Frame = Frame(ceil(frame.rows/2), frame.columns, (frame.top_left_point[0] + floor(frame.rows/2), frame.top_left_point[1]))
+        self.frames.append(new_frame)
+        # TODO Resize old frame -> Also take in account dividing odd numbers, use math.floor or ceil
+
+        # register new frame
+        self._register_frame(new_frame)
+
+        return new_frame
+
     def __str__(self) -> str:
         """ Get string of char_grid in the way you would get it printed """
         return ''.join([char for row in self.char_grid for char in row])
@@ -105,6 +148,21 @@ class FrameManager():
 if __name__ == '__main__':
     frame_manager = FrameManager()
     frame_manager.frames[-1].add_border()
+    print(frame_manager.terminal.size)
+    """
+    first_frame: Frame = frame_manager.frames[-1]
+    first_frame.add_border()
+
+    second_frame: Frame = frame_manager.splitv(first_frame)
+    second_frame.add_border()
+
+    third_frame: Frame = frame_manager.splith(second_frame)
+    third_frame.add_border()
+    """
+
+    for i in range(2):
+        frame_manager.splitv(frame_manager.frames[-1]).add_border()
+        frame_manager.splith(frame_manager.frames[-1]).add_border()
     # print frame -> intended way
     # frame_manager.print() 
     
