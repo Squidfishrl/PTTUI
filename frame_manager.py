@@ -1,3 +1,4 @@
+from itertools import chain
 from typing import Type
 
 from frame import Frame
@@ -27,7 +28,8 @@ class FrameManager():
         """
 
         # create a matrix holding all the characters to be printed to the term
-        char_grid: list[list[str]] = [ ['\n' if column == terminal.columns else ' ' for column in range(terminal.columns+1)] for row in range(terminal.rows)] 
+        self.char_grid: list[list[str]] = [ ['\n' if column == terminal.columns else ' ' for column in range(terminal.columns+1)] for row in range(terminal.rows)] 
+        self.char_grid[-1][-1] = ''  # remove last new line
 
 
     def _create_first_frame(self) -> Frame:
@@ -51,28 +53,62 @@ class FrameManager():
 
         self.terminal.on_resize(frame.resize)
 
+    def _update_chars(self, target_frame: Frame = None) -> None:
+        """
+        Updates the char_grid buffer with the char buffer of all frames or a specified frame
+        """
+
+        # iterate over all frames
+        for frame in self.frames:
+            # load target frame (exit out of for after)
+            if target_frame is not None:
+                frame = target_frame
+
+            # -1 because first character is considered (1, 1) but lists start from 0
+            row_offset: int = frame.top_left_point[0] - 1
+            column_offset: int = frame.top_left_point[1] - 1
+
+            for row in range(frame.rows):
+                for column in range(frame.columns):
+                    # replace previous frame chars with new ones
+                    self.char_grid[row + row_offset][column + column_offset] = frame.chars[row][column]
+
+            if target_frame is not None:
+                break
+
+
+
+
     def print(self) -> None:
         """ Conver char_grid to a string via list coprehension and print it """
+
+        self._update_chars()
 
         """
         # Non-comprehension sollution
 
-        for row in range(0, rows):
-            for column in range(0, columns):
-                buf += char_grid[row][column]
-        """
+        buffer: str = ''
+        for row in self.char_grid:
+            for char in row:
+                buffer += f"{char}"
 
-        self.terminal.write((''.join([[char for char in self.char_grid[row]] for row in range(self.terminal.rows)])))
+        self.terminal.write(buffer)
+        """
+        
+        self.terminal.write(''.join([char for row in self.char_grid for char in row]))
+
+    def __str__(self) -> str:
+        """ Get string of char_grid in the way you would get it printed """
+        return ''.join([char for row in self.char_grid for char in row])
 
 
 if __name__ == '__main__':
     frame_manager = FrameManager()
-    first_frame: Frame = frame_manager.frames[-1]
-    first_frame.add_border()
-    print(first_frame.rows)
-    print(first_frame.columns)
-    print(first_frame.top_left_point)
-
-    # print frame
-    print(first_frame, end='')
+    frame_manager.frames[-1].add_border()
+    # print frame -> intended way
+    # frame_manager.print() 
+    
+    # manual print (no \n when program exits (no loop due to no events in example
+    frame_manager._update_chars()
+    print(frame_manager, end='')
     input()
