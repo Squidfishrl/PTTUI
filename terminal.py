@@ -1,4 +1,5 @@
 from os import get_terminal_size
+from sys import stdout
 from typing import Callable, Any 
 
 class Terminal:
@@ -41,6 +42,7 @@ class Terminal:
 
     def on_resize(self, callback: Callable[..., Any]) -> None:
         """ Subscribes callback function to resize event """
+        # TODO: pass args
 
         self.listeners.add(callback)
 
@@ -48,6 +50,12 @@ class Terminal:
         """ Unsubscribe a function from resize event """
 
         self.listeners.remove(callback)
+
+    def write(self, buf: str) -> None:
+        """ Write a string to stdout """
+        if len(buf) != stdout.write(buf):
+            # TODO: Handle partial write and add bool if to handle or throw an exception
+            raise Exception("Partial write encountered")
 
 
 
