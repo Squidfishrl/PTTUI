@@ -1,4 +1,3 @@
-from itertools import chain
 from math import ceil, floor
 from typing import Type
 
@@ -12,7 +11,7 @@ class FrameManager():
     Class managing multiple frames, including:
     - tilling window manager like frame creation (splitv and splith)
     - listening to terminal resize events to update a frame
-    - combining all frames into a string, (TODO: passed to terminal print)
+    - combining all frames into a string 
     TODO: Frame overlay - perhaps use multiple frame managers or separate property for that?
     Uses a 2 dimensional matrix with the size of the terminal when printing
     """
