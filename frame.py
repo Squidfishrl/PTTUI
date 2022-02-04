@@ -15,13 +15,15 @@ class Frame():
 
         self.top_left_point: tuple[int] = top_left_point 
 
-        # matrix holding how the frame should look in the temrinal
-        self.chars: list[list[str]] = [ [' ' for i in range(columns)] for row in range(rows)] 
+        # matrix holding how the frame should look in the terminal
+        self.chars: list[list[str]] = [ [' ' for column in range(columns)] for row in range(rows)] 
+
+        self.has_border: bool = False
 
     def add_border(self):
         """
         add a border to the frame 
-        useful for visualization and debug
+        useful for debug visualization  
         OPT: use list comprehension for better performance? tradeoff readability
         """
 
@@ -39,14 +41,26 @@ class Frame():
         self.chars[-1][-1] = '╝'
         self.chars[-1][0] = '╚'
 
+        # update has_border
+        self.has_border = True
 
+    def resize(self, rows: int, columns: int, top_left_point: tuple[int]) -> None:
+        """
+        Completely resize/move frame
+        Use on terminal resize. Frame manager should subscribe this function to the term event
+        And should use it in a way that frames don't overlap (If it's a tiling manager)
+        """
 
-    def resize(self) -> None:
-        """
-        Resizes frame on terminal resize
-        Frame manager should subscribe this function to the term event
-        """
-        pass
+        self.rows = rows
+        self.columns = columns
+        self.top_left_point = top_left_point
+        self.chars = [ [' ' for column in range(columns)] for row in range(rows)] 
+
+        # TODO: once widgets are added, redraw widget
+
+        # readd border
+        if self.has_border:
+            self.add_border()
 
     def __str__(self) -> str:
         """
@@ -68,8 +82,4 @@ class Frame():
 
 
         return buffer
-
-
-
-
 

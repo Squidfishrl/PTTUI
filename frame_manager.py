@@ -78,7 +78,7 @@ class FrameManager():
                 break
 
     def print(self) -> None:
-        """ Conver char_grid to a string via list coprehension and print it """
+        """ Convert char_grid to a string via list comprehension and print it """
 
         self._update_chars()
 
@@ -105,9 +105,11 @@ class FrameManager():
         TODO: three+ way event splits..
         """
         # Create a new frame in the above described way
-        new_frame: Frame = Frame(frame.rows, floor(frame.columns/2), (frame.top_left_point[0], frame.top_left_point[1] + ceil(frame.columns/2)))
+        new_frame: Frame = Frame(frame.rows, ceil(frame.columns/2), (frame.top_left_point[0], frame.top_left_point[1] + floor(frame.columns/2)))
         self.frames.append(new_frame)
+        
         # TODO Resize old frame -> Also take in account dividing odd numbers, use math.floor or ceil
+        frame.resize(frame.rows, floor(frame.columns/2), frame.top_left_point)
 
         # register new frame
         self._register_frame(new_frame)
@@ -132,7 +134,9 @@ class FrameManager():
         # Create a new frame in the above described way
         new_frame: Frame = Frame(ceil(frame.rows/2), frame.columns, (frame.top_left_point[0] + floor(frame.rows/2), frame.top_left_point[1]))
         self.frames.append(new_frame)
+
         # TODO Resize old frame -> Also take in account dividing odd numbers, use math.floor or ceil
+        frame.resize(floor(frame.rows/2), frame.columns, frame.top_left_point)
 
         # register new frame
         self._register_frame(new_frame)
@@ -159,7 +163,7 @@ if __name__ == '__main__':
     third_frame.add_border()
     """
 
-    for i in range(2):
+    for i in range(4):
         frame_manager.splitv(frame_manager.frames[-1]).add_border()
         frame_manager.splith(frame_manager.frames[-1]).add_border()
     # print frame -> intended way
